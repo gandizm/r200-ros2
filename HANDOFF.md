@@ -22,10 +22,10 @@ realsense-ros 4.51.1；2.58.3 仅用于第二阶段差异评估，尚未移植�
 | 仓库 | Commit | 内容 |
 | --- | --- | --- |
 | RS1 | `29e2fe0` | Ubuntu 22.04 基线兼容 |
-| RS2 core | `ea328f9` / `55202f3` | RS1 模式/帧序/重启修正；支持文档 |
+| RS2 core | `4a81adc` | 模式/帧序/重启、typed controls、双 Y16 与支持文档 |
 | realsense-ros | `371cbb5` | R200 video sensor 兼容（前一提交含 PID） |
-| tools | `af714f2` | counter 与同设备双周期验收 |
-| demo | `6b258e8` / `a6f04bc` | 同频预设/验收器；发布门禁文档 |
+| tools | `526a32b` | counter、重启、profile、controls 与双 Y16 验收 |
+| demo | `4434cf4` | 同频预设、公开发布、功能入口、验收和 TODO 文档 |
 
 以上 commit 均为本地提交；GitHub remote、release tag 和发布 commit 仍需在用户
 登录并确认仓库名后记录。

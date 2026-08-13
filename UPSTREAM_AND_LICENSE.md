@@ -7,7 +7,7 @@
 基线是 IntelRealSense/librealsense 的 `v2.51.1`。当前 `r200-rs2-port`
 相对该 tag 的精确差异为：
 
-- 当前候选工作树为 12 个文件、2451 行新增、6 行删除；发布 commit 后重算；
+- 当前 `4a81adc` 相对 `v2.51.1` 为 12 个文件、2451 行新增、6 行删除；
 - 新增 `src/r200/` 设备、传感器、标定、profile、帧处理和 XU 协议实现；
 - 只对 context、产品线、通用 sensor 生命周期和构建入口做少量接线；
 - R200 协议和模式以 librealsense 1.12.1（RS1）的 DS4 实现为证据源，转换到
