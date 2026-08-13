@@ -1,71 +1,99 @@
-# R200 ROS2 demo
+# R200 ROS2 兼容工程
 
-最接近英特尔官方 RS2+ROS2 用法的最小演示：官方 `realsense2_camera`
-驱动 + RViz2（点云）+ 4 个独立的 `rqt_image_view` 图像窗口
-（Depth / RGB / Infra1 / Infra2），支持切换分辨率与帧率。
+本工程让 R200/LR200 通过 librealsense2 2.51.1 和官方
+`realsense2_camera` ROS2 节点工作，并尽量让不依赖 D400 专属能力的上层
+应用在 R200 与无 IMU 的 D435 之间复用。核心驱动保持通用、可审阅、可继续
+向上游演进；GitHub 仓库可设为 Private，但代码不得依赖某台机器、某个序列号
+或个人目录。
 
-## 环境准备
+当前稳定基线：
 
-本机已经安装：ROS2 Humble、RViz2、本工作区的 `realsense2_camera`
-（链接 R200 适配版 librealsense2，安装前缀 `rs2_install`）。
+- librealsense2 2.51.1（保留 SR300 legacy 的最后一代基线）
+- realsense-ros 4.51.1
+- ROS2 Humble / Linux
+- 真机基线：LR200，固件 2.0.71.14
+
+## 两个已确认预设
+
+| 预设 | Depth / IR1 / IR2 | Color | 用途 |
+| --- | --- | --- | --- |
+| 默认吞吐 | 640x480@60 | 640x480@60 | 同频、低延迟、点云和实时算法 |
+| 彩色质量 | 640x480@30 | 1920x1080@30 | 颜色细节优先 |
+
+默认吞吐预设在当前真机上，开启 RGB 点云后四路图像约 59.5Hz、点云约
+59.4Hz。质量预设能正确协商全部模式，但 ROS2 外部订阅 1080p RGB 时实测约
+23-27Hz；深度、双红外和内部点云仍约 30Hz。因此默认选择 480p60，1080p30
+保留为质量优先选项，不把它宣传成稳定满 30Hz 的实时预设。
+
+## 构建
+
+先构建并安装 R200 版 librealsense2，再构建 ROS2 工作区。路径使用变量，
+不要求仓库位于特定用户目录。
+
+```bash
+export R200_ROOT=/path/to/r200_ros2
+
+cmake -S "$R200_ROOT/upstream/librealsense2-v2.51.1" \
+      -B "$R200_ROOT/upstream/librealsense2-v2.51.1/build"
+cmake --build "$R200_ROOT/upstream/librealsense2-v2.51.1/build" -j4
+cmake --install "$R200_ROOT/upstream/librealsense2-v2.51.1/build" \
+      --prefix "$R200_ROOT/rs2_install"
+
+source /opt/ros/humble/setup.bash
+cd "$R200_ROOT/ros2_ws"
+colcon build --cmake-args \
+  -Drealsense2_DIR="$R200_ROOT/rs2_install/lib/cmake/realsense2" \
+  -DBUILD_TESTING=OFF
+```
+
+## 运行
 
 ```bash
 source /opt/ros/humble/setup.bash
-source /home/zmiaow/r200_ros2/ros2_ws/install/setup.bash
-export LD_LIBRARY_PATH=/home/zmiaow/r200_ros2/rs2_install/lib:$LD_LIBRARY_PATH
+source "$R200_ROOT/ros2_ws/install/setup.bash"
+export LD_LIBRARY_PATH="$R200_ROOT/rs2_install/lib:${LD_LIBRARY_PATH:-}"
+
+# 默认：四路 640x480@60 + RGB 点云 + GUI
+ros2 launch r200_demo r200_demo.launch.py
+
+# 无 GUI 验收
+ros2 launch r200_demo r200_demo.launch.py gui:=false
+
+# 彩色质量预设
+ros2 launch r200_demo r200_demo.launch.py \
+  depth_profile:=640x480x30 \
+  ir_profile:=640x480x30 \
+  color_profile:=1920x1080x30
 ```
 
-## 一键启动
+Launch 直接调用官方 `realsense2_camera_node`，使用官方参数名
+`depth_module.profile`、`rgb_camera.profile`、`enable_sync`、
+`pointcloud.enable` 等。R200 的红外是独立 UVC sensor，因此额外显式设置由
+官方 wrapper 自动生成的 `stereo_ir_sensor.profile`；官方 4.51.1 的
+`rs_launch.py` 没有声明这个参数。
+
+R200 固件对活动状态下的部分 IR 重配置不稳，切换脚本采用完整停止后重启：
 
 ```bash
-ros2 launch r200_demo r200_demo.launch.py depth_profile:=640x480x60
-```
-
-RViz2 显示 `/camera/depth/color/points` 的 RGB 点云（固定坐标系
-`camera_link`）；Depth / RGB / Infra1 / Infra2 各自独立成窗，可自由
-拖拽、缩放。
-
-## 运行中切换分辨率
-
-```bash
-# 切到 30Hz
-ros2 run r200_demo r200_switch.sh 640x480x30 640x480x30
-
-# 深度 90Hz + 颜色 720p
-ros2 run r200_demo r200_switch.sh 640x480x90 1280x720x30
-
-# 默认 640x480x60
 ros2 run r200_demo r200_switch.sh
-
-# 原生深度 628x469（无任何 padding/重采样）+ 颜色 640x480
-ros2 run r200_demo r200_switch.sh 628x469x60 640x480x60
+ros2 run r200_demo r200_switch.sh 640x480x30 1920x1080x30
 ```
 
-可用组合：
+## 话题与功能对齐边界
 
-| Stream | 可用分辨率/帧率（节选） |
-| --- | --- |
-| Depth | 原生 628x469@30/60/90、628x361、628x242；rectified 640x480@30/60/90、492x372、332x252 |
-| Infra1/2 | 同 Depth（Y8） |
-| Color | 1920x1080@30, 1280x720@30, 640x480@60, 320x240@60 等 |
+通用功能：depth/color/infra1/infra2 图像、CameraInfo、内外参、TF、深度单位、
+RGB PointCloud2、标准 profile 参数。
 
-关于“重采样”：
+不伪装成 D435 的功能：D400 Advanced Mode、硬件同步、IMU、on-chip
+calibration、D400 专属曝光/激光器控制。上层应用应检测 capability，而不是
+仅按产品名分支。
 
-- 640x480 是 **6px 零填充**（原生像素 1:1 平移到 offset(6,6)，边框置 0），
-  不是插值重采样，像素值原样保留。
-- 原生 628x469 的内参 `fx=573.909, ppx=314.807, ppy=233.195` 与 640x480 的
-  `fx=573.909, ppx=320.807, ppy=239.195` 来自同一份标定，两者 3D 点云几何
-  **完全一致**；depth→color 外参不变。
+## 验收与后续
 
-说明：R200 固件不允许在其他流运行时重配置 IR 接口，因此切换采用
-“停掉当前 launch → 用新参数重启”的方式，RViz 会一并重开。
-实测 640x480 深度 60Hz 可用（`ros2 topic hz /camera/depth/image_rect_raw`）。
+- [ACCEPTANCE.md](ACCEPTANCE.md)：需求逐项映射、命令、证据与状态
+- [HANDOFF.md](HANDOFF.md)：架构、仓库和维护交接
+- [TODO.md](TODO.md)：按优先级排列的未完成项和完成定义
+- librealsense 核心说明：`doc/r200-support.md`
 
-## 常用话题
-
-- `/camera/depth/image_rect_raw` + `/camera/depth/camera_info`
-- `/camera/color/image_raw` + `/camera/color/camera_info`
-- `/camera/infra1/image_raw`、`/camera/infra2/image_raw`
-- `/camera/depth/color/points`（PointCloud2）
-- `/camera/depth/colorized`（深度伪彩色）
-- `/tf_static`（`camera_link` 到各光学坐标系）
+在 `ACCEPTANCE.md` 的发布门禁全部满足前不推送正式发布分支。D435 真机和
+一小时长稳当前缺少验收条件，会明确保留为待验，不能写成通过。

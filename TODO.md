@@ -1,93 +1,93 @@
-# R200 后续 TODO（交给接管 Codex）
+# TODO
 
-按优先级排序。每一项都说明现状与建议做法，避免走弯路。
+每项必须包含完成定义和证据，不以“AI 已实现”作为完成依据。优先级内按推荐
+顺序执行。
 
-## P0 — 运行中切换 IR 失败（firmware 限制）
+## P0：2.51.1 首次可管理版本
 
-现状：realsense2_camera 通过参数重启 sensor 时，IR 接口的
-`VIDIOC_S_FMT` 返回 `EIO`，只有重启整个节点/重插 USB 才恢复。
-深度、颜色传感器可运行中切换，IR 不行；因此 demo 的切换脚本采用
-“重启 launch”。
+- [ ] 完成 60 分钟默认预设长稳。
+  - 完成定义：四路 640x480@60 + RGB 点云连续运行；无 EIO/断流；平均
+    ≥48Hz；保存 CPU、RSS、丢帧与末尾日志。
+- [ ] 跑完六组 depth/IR profile 的 30/60/90 抽样矩阵。
+  - 完成定义：尺寸、stride、数据范围、frame counter 和 start/stop 均通过；
+    传输 metadata 行不出现在图像中。
+- [ ] 整理最小提交。
+  - core：RS1 模式/裁剪/帧计数；stream-intent 生命周期；文档各自提交。
+  - ROS2：只保留 PID/视频 sensor 兼容的必要提交。
+  - demo/tools：launch、验收器和文档独立提交。
+- [ ] 用户登录后创建 GitHub Private 独立镜像。
+  - 不能用 GitHub 公开 Fork 代替；添加官方仓库为 `upstream`。
+  - 推送前检查无 token、SSH key、设备序列号逻辑、绝对个人路径、build/install
+    产物和超大日志。
+- [ ] 为首次版本打 pre-release 标签并附验收表。
+  - 若 D435/热插拔/长稳仍未跑完，release notes 必须明确 experimental。
 
-方向（按可能性排序）：
-1. 对照 RS1 `ds_device::on_before_start()`：每次 STREAMON 前重写
-   `stream_intent=0x7`（现在 RS2 只在每个设备实例首次 open 时写一次）。
-   `src/r200/r200.cpp` 的 `write_stream_intent()` 目前有 `_intent_written`
-   一次性保护；若在全部流停止后复位该标志（跟踪所有 sensor 的 stop），
-   重启时的第一个 open 会重写 intent。之前试过“每次 open 都写”方案：
-   首启没问题，但重启仍 EIO（怀疑需要整机 stop→intent→start 的原子序列）。
-2. 研究 RS1 的 `sw_reset`/`disparity` XU 是否需要在重配置前下发。
-3. 若确实无法运行中切换：把切换设计为“进程级重启”并保持现状，
-   在文档中标注为已知限制（当前做法）。
+## P1：核心驱动完整性
 
-## P0 — 时间戳/元数据（`Frame metadata isn't available`）
+- [ ] 实现 R200 typed options：曝光、增益、自动曝光、发射器/激光功率、
+  disparity/depth 控制。
+  - 逐项对照 RS1 XU 范围、步进、默认值和只读状态；不得照搬 D400 option。
+  - 每项必须有 query/set/恢复默认和越界测试。
+- [ ] 正确支持或明确永久禁用 Y16/Y12 IR。
+  - 当前有原始 UVC 格式映射，但已从用户 profile 隐藏。
+  - 完成定义：拆包、metadata 行、双目索引、内参、像素范围和 ROS encoding
+    全部有真机测试；否则继续隐藏。
+- [ ] 处理混合 FPS 时的 color frame counter scale。
+  - RS1 会按 master depth/IR FPS ÷ color FPS 归一化 YUYV 嵌入计数。
+  - 当前两个正式预设同频，不受影响；混合 60/30、90/30 前必须补齐。
+- [ ] 评估可证明的时间戳方案。
+  - 当前使用 backend system timestamp 并诚实返回 `SYSTEM_TIME`。
+  - RS1 只是按 FPS 合成时间线，不能据此标成 `HARDWARE_CLOCK`。
+  - 只有拿到真实设备时钟证据并验证 wrap/drop 后才能更改 domain。
+- [ ] 把 stream-intent 从保守 0x7 改为准确 active mask（若固件允许）。
+  - 当前完整 close→reopen 已通过；部分 sensor 在线重配仍不保证。
+  - 必须验证 depth-only、color-only、IR-only、任意组合和失败回滚。
+- [ ] 热插拔和异常恢复。
+  - 覆盖节点重连、XU `ENOENT`、USB reset 后校准重新读取；不刷写固件。
+- [ ] 定位 ROS 的 `Frame metadata isn't available` 单次警告。
+  - frame counter metadata 已可用；警告来源是 system-time domain。
+  - 不允许通过伪造 hardware clock 消除警告。
 
-现状：R200 timestamp 域为 `RS2_TIMESTAMP_DOMAIN_SYSTEM_TIME`，驱动每帧打
-警告；RGB 点云纹理在高帧率下偶发时间戳对齐失败。
+## P1：D435 通用功能对齐
 
-方向：移植 RS1 的帧计数解析（`src/ds-device.cpp` 里
-`serial_timestamp_generator` / fisheye timestamp reader）：R200 把帧计数
-嵌在 IR 首像素低 4 位（fw < 1.27.2.90）或首 4 像素 LSB（fw >= 1.27.2.90，
-本机 fw 2.0.71.14 走后者）。实现一个 `r200_timestamp_reader`，在
-`src/r200/r200.cpp` 的 `r200_timestamp_reader::get_frame_timestamp` 中解析，
-并让 `get_frame_timestamp_domain` 返回 `HARDWARE_CLOCK`。需要同步 IR 与
-depth 的计数（当前二者独立走各自 raw sensor）。
+- [ ] 连接无 IMU D435 跑相同 ROS2 acceptance。
+  - 检查官方默认 profile、图像、CameraInfo、TF、pointcloud 和动态参数。
+  - 确认通用 `sensor.cpp` 改动没有破坏 D400/SR300。
+- [ ] 增加 capability 示例/文档。
+  - 应用按 `supports(option/extension)` 检测 Advanced Mode、硬件同步、IMU、
+    emitter，不按设备名猜测。
+- [ ] 明确“功能对齐”不包含的硬件能力。
+  - R200 不伪装 D400 Advanced Mode、on-chip calibration、硬件同步或 IMU。
 
-## P1 — 原生分辨率 vs 640x480 的策略（已基本解决）
+## P2：ROS2 质量和性能
 
-现状（本轮已实现）：depth 同时暴露
-- 原生 `628x469 / 628x361 / 628x242`（零处理，identity block）；
-- rectified `640x480 / 492x372 / 332x252`（`r200_depth_pad`，6px 零填充，
-  非插值）。
+- [ ] 分析 1080p30 RGB 对外发布只有约 23-27Hz。
+  - 分离 UVC、YUYV→RGB 转换、ROS 序列化、DDS、Python 订阅和 GUI 成本。
+  - 比较 pointcloud 开/关、C++ subscriber、composition/intra-process、不同 RMW。
+  - 优化不得改变默认 480p60 的稳定性。
+- [ ] 修复或删除无输出的 colorizer 路径。
+  - 当前 demo 默认关闭 `colorizer.enable`，原始 Z16 和 pointcloud 不受影响。
+- [ ] 增加 headless CI/录包回放验收。
+  - 无真机测试 profile/filter/calibration；真机 job 单独标记。
+- [ ] 校验 QoS、相机命名空间、多相机和 rosbag。
 
-两者内参同源（`modesLR[]`）：原生 `ppx/ppy = rectified ppx/ppy - 6`，
-`fx/fy` 相同，3D 几何一致。彩色 UVC 最高 1920x1080@30，无 480p 限制。
-ROS2 建图算法（RTAB-Map 等）用 camera_info，不要求 480p 或 8/16 对齐；
-唯一的多重限制（RS2 内 `(w*h)%8==0` 断言）已在 `src/sensor.cpp` 放宽。
+## P2：迁移 librealsense 2.58.3 与新版 ROS2
 
-建议：保留双 profile。后续可选：给 demo 增加 `--raw` 一键切换；把默认
-profile 的选择写成 launch 参数文档。
+- [ ] 冻结 2.51.1 已验收 tag，创建独立 migration 分支。
+- [ ] 先移植最小核心，不复制旧树中的无关 SR300/ivcam 实现。
+- [ ] 解决 product-line bit 冲突。
+  - 2.51.1 的 R200 使用 0x20；2.58.3 已把 0x20 分配给 D500。
+  - 必须选择新 bit、更新公开枚举/上下文过滤/测试，禁止静默复用。
+- [ ] 适配新版 backend、device-info、synthetic sensor、profile/processing、
+  metadata 和 matcher 接口。
+- [ ] 对齐当时最新版官方 realsense-ros 参数和 launch 风格。
+  - R200 差异应限制在设备发现/sensor 建模；上层调用尽量零特例。
+- [ ] 完整重跑本文件 P0/P1 验收，并与 2.51.1 结果做回归表。
 
-## P1 — `/camera/depth/colorized` 无输出
+## 永久约束
 
-现状：`colorizer.enable:=true` 后话题不发布（echo 无消息）。原因未定位，
-可能与 align_depth 关闭时 colorizer 的 frame 路径有关。
-
-方向：读 `base_realsense_node.cpp` 的 `frame_callback` 中
-`_colorizer_filter->Process` 分支，确认是否需要 `align_depth.enable:=true`
-或帧集合约束。demo 目前用原始 Z16（RViz 可 Normalize 显示），不依赖此话题。
-
-## P1 — 60Hz 全链路只有 ~41Hz
-
-现状：RS2 直连 depth-only 640x480@60 ≈ 56.6Hz；ROS2 全链路（depth60 +
-color60 + IR30 + pointcloud）≈ 41Hz。
-
-方向：先关 pointcloud（`pointcloud.enable:=false`）测纯图像路径，再逐步
-加回 color/IR，定位是 pointcloud 计算、asyncer 单线程还是发布开销。
-注意 realsense2_camera 默认 `use_intra_process_comms=true`，可对比关闭后的
-吞吐。
-
-## P2 — 向新版 librealsense2 迁移（用户后续主线）
-
-1. 当前基线是 2.51.1（官方最后一个保留 SR300 legacy 的版本），本分支
-   `r200-rs2-port` 相对上游的最小补丁集 = `git diff 上游2.51.1..HEAD`，
-   集中在 `src/r200/`、`src/context.cpp`、`src/sensor.cpp`、
-   `include/librealsense2/h/rs_context.h`、`src/libusb/libusb.h`。
-2. 新版 RS2 删除了 `src/ivcam` 等 legacy 代码，但 R200 用的是通用
-   `synthetic_sensor` + `uvc_sensor` + processing block，理论上可随
-   `src/r200/` 平移。需要适配：新 `backend` 接口、`stream_profile`/
-   `stream_resolution` 机制是否变化、metadata 框架。
-3. 先在新版上跑 `rs2_probe`/`rs2_stream`（tools/），再跑 ROS2 驱动。
-
-## P2 — 长稳测试与边界
-
-- 连续 >1h 四路流 + pointcloud 稳定性（当前只跑过分钟级）。
-- 628x361 / 628x242 与 492x372 / 332x252 的端到端验证（profile 已暴露）。
-- 热插拔恢复、`usbreset` 后的 XU `ENOENT` 恢复路径（见 HANDOFF.md 第 6 节）。
-
-## 约束（务必遵守）
-
-- 不刷写 R200 固件；不做 destructive kernel 操作。
-- 不改 D400/SR300/common 代码，除非是通用 bug（历史上有两处通用修复：
-  `sensor.cpp` 的 backend 尺寸/断言，需保留并说明）。
-- 每个小改动单独 commit（`r200: ...` / `ros2: ...`），保持可回退。
+- 不刷 R200 固件，不执行破坏性内核/USB 操作。
+- 不用假数据宣称 hardware capability。
+- 不把构建路径、用户名、序列号或 GitHub 凭据写进代码。
+- 不覆盖用户已有改动；提交小而可回退。
+- 未跑的硬件验收永远写 `PENDING`，不能凭编译通过改成 `PASS`。
