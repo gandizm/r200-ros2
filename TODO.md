@@ -8,9 +8,11 @@
 - [ ] 完成 60 分钟默认预设长稳。
   - 完成定义：四路 640x480@60 + RGB 点云连续运行；无 EIO/断流；平均
     ≥48Hz；保存 CPU、RSS、丢帧与末尾日志。
-- [ ] 跑完六组 depth/IR profile 的 30/60/90 抽样矩阵。
-  - 完成定义：尺寸、stride、数据范围、frame counter 和 start/stop 均通过；
+- [x] 跑完六组 depth/IR profile 的 30/60/90 抽样矩阵。
+  - 完成定义：尺寸、stride、buffer、frame counter 和 start/stop 均通过；
     传输 metadata 行不出现在图像中。
+  - 证据：`tools/rs2_profile_matrix`，18/18 PASS；已检查尺寸、stride、buffer、
+    counter 和完整启停。像素质量/数据范围仍由后续场景化测试覆盖。
 - [ ] 整理最小提交。
   - core：RS1 模式/裁剪/帧计数；stream-intent 生命周期；文档各自提交。
   - ROS2：只保留 PID/视频 sensor 兼容的必要提交。

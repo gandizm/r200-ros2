@@ -102,12 +102,24 @@ depth/IR 约 29.97Hz，点云约 29.76Hz，1080p RGB 约 23.11Hz；单独
 `ros2 topic hz` 观察到约 24-27Hz。结论是“质量模式可用，但外部 RGB 发布
 未稳定满 30Hz”，所以默认仍采用四路 480p60。
 
+### A6：完整 depth/双红外模式矩阵
+
+```bash
+tools/rs2_profile_matrix
+```
+
+六组有效尺寸分别在 30/60/90fps 下执行 open/start/收帧/stop/close，共 18
+个组合。逐帧检查输出尺寸、stride、buffer 大小、指针、metadata counter 与
+frame number 一致性；每组至少收到 2 个 depth 和 4 个 IR 输出帧。
+
+结果：`MATRIX total=18 failures=0 result=PASS`。
+
 ## 发布前仍需完成
 
 | ID | 验收项 | 完成定义 | 状态 |
 | --- | --- | --- | --- |
 | P1 | 一小时默认预设长稳 | 60 分钟；无断流/EIO；四路与点云平均≥48Hz；记录丢帧和内存 | PENDING |
-| P2 | 全模式抽样 | 六组 depth/IR 尺寸各跑 30/60/90；检查尺寸、stride、非空数据和 frame counter | PENDING |
+| P2 | 全模式抽样 | 六组 depth/IR 尺寸各跑 30/60/90；检查尺寸、stride、buffer 和 frame counter | PASS：18/18 |
 | P3 | 热插拔恢复 | 节点运行→拔出→插入；在限定时间内恢复且无需刷固件 | PENDING |
 | P4 | D435 回归 | 同一 RS2/ROS2 构建连接无 IMU D435；默认官方 profile、TF、点云不回归 | PENDING：当前无 D435 |
 | P5 | 代码静态门禁 | `git diff --check`、core 和 ROS2 构建、Python/shell 语法通过 | PASS |
