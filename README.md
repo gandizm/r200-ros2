@@ -13,6 +13,15 @@
 - ROS2 Humble / Linux
 - 真机基线：LR200，固件 2.0.71.14
 
+## 公开仓库
+
+- [gandizm/librealsense](https://github.com/gandizm/librealsense)，默认分支
+  `r200-rs2-port`：官方 librealsense fork 和 R200 核心移植；
+- [gandizm/realsense-ros](https://github.com/gandizm/realsense-ros)，默认分支
+  `r200-ros2`：官方 ROS wrapper 的最小兼容补丁；
+- [gandizm/r200-ros2](https://github.com/gandizm/r200-ros2)：本配套 ROS package、
+  Skill、validation 工具和验收文档。
+
 ## 两个已确认预设
 
 | 预设 | Depth / IR1 / IR2 | Color | 用途 |
@@ -25,18 +34,28 @@
 23-27Hz；深度、双红外和内部点云仍约 30Hz。因此默认选择 480p60，1080p30
 保留为质量优先选项，不把它宣传成稳定满 30Hz 的实时预设。
 
-## 构建
+## 获取与构建
 
-先构建并安装 R200 版 librealsense2，再构建 ROS2 工作区。路径使用变量，
-不要求仓库位于特定用户目录。
+推荐使用以下三仓库布局。先构建并安装 R200 版 librealsense2，再构建包含官方
+wrapper fork 和本 package 的 ROS2 工作区：
 
 ```bash
-export R200_ROOT=/path/to/r200_ros2
+export R200_ROOT=/path/to/r200_ws
+mkdir -p "$R200_ROOT/ros2_ws/src"
 
-cmake -S "$R200_ROOT/upstream/librealsense2-v2.51.1" \
-      -B "$R200_ROOT/upstream/librealsense2-v2.51.1/build"
-cmake --build "$R200_ROOT/upstream/librealsense2-v2.51.1/build" -j4
-cmake --install "$R200_ROOT/upstream/librealsense2-v2.51.1/build" \
+git clone --branch r200-rs2-port \
+  https://github.com/gandizm/librealsense.git \
+  "$R200_ROOT/librealsense"
+git clone --branch r200-ros2 \
+  https://github.com/gandizm/realsense-ros.git \
+  "$R200_ROOT/ros2_ws/src/realsense-ros"
+git clone https://github.com/gandizm/r200-ros2.git \
+  "$R200_ROOT/ros2_ws/src/r200_demo"
+
+cmake -S "$R200_ROOT/librealsense" \
+      -B "$R200_ROOT/librealsense/build"
+cmake --build "$R200_ROOT/librealsense/build" -j4
+cmake --install "$R200_ROOT/librealsense/build" \
       --prefix "$R200_ROOT/rs2_install"
 
 source /opt/ros/humble/setup.bash
@@ -45,6 +64,9 @@ colcon build --cmake-args \
   -Drealsense2_DIR="$R200_ROOT/rs2_install/lib/cmake/realsense2" \
   -DBUILD_TESTING=OFF
 ```
+
+开发维护者也可使用 `upstream/librealsense2-v2.51.1` 和
+`upstream/realsense-ros` 的审阅布局；Skill 和 doctor 同时识别两种布局。
 
 ## 运行
 

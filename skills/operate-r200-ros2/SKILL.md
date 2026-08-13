@@ -12,9 +12,11 @@ the common D435 ROS surface; keep R200-only handling below the public ROS API.
 
 1. Locate the companion repository containing `ACCEPTANCE.md`, `TODO.md`, and
    `launch/r200_demo.launch.py`.
-2. Resolve the workspace root from `R200_ROOT` when set. Otherwise accept a local
-   checkout with sibling `upstream/librealsense2-v2.51.1`,
-   `upstream/realsense-ros`, `rs2_install`, and `ros2_ws` directories.
+2. Resolve the workspace root from `R200_ROOT` when set. Prefer the public layout
+   with `librealsense`, `ros2_ws/src/realsense-ros`,
+   `ros2_ws/src/r200_demo`, and `rs2_install`. Also accept the maintainer layout
+   with `upstream/librealsense2-v2.51.1`, `upstream/realsense-ros`,
+   `ros2_ws`, and `rs2_install`.
 3. Never bake usernames, absolute checkout paths, device serial numbers, tokens,
    or firmware writes into code or documentation.
 4. Run `scripts/doctor.sh [workspace-root]` for a non-destructive environment and
@@ -29,13 +31,15 @@ profiles, ROS names, options, or capability claims. Read the repository-level
 ### Build
 
 Build and install the R200 librealsense fork first, then build the ROS workspace
-against that exact installation:
+against that exact installation. The commands below use the public layout; in a
+maintainer checkout resolve the core source as
+`$R200_ROOT/upstream/librealsense2-v2.51.1` instead:
 
 ```bash
-cmake -S "$R200_ROOT/upstream/librealsense2-v2.51.1" \
-      -B "$R200_ROOT/upstream/librealsense2-v2.51.1/build"
-cmake --build "$R200_ROOT/upstream/librealsense2-v2.51.1/build" -j4
-cmake --install "$R200_ROOT/upstream/librealsense2-v2.51.1/build" \
+cmake -S "$R200_ROOT/librealsense" \
+      -B "$R200_ROOT/librealsense/build"
+cmake --build "$R200_ROOT/librealsense/build" -j4
+cmake --install "$R200_ROOT/librealsense/build" \
       --prefix "$R200_ROOT/rs2_install"
 
 source /opt/ros/humble/setup.bash
@@ -138,4 +142,3 @@ Use this order:
   notices in changed upstream files.
 - Re-run the repository acceptance matrix after functional changes. D435 hardware
   acceptance remains separate from compilation and R200 hardware acceptance.
-

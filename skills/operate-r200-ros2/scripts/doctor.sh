@@ -12,21 +12,28 @@ fail() { printf 'FAIL  %s\n' "$*"; failures=$((failures + 1)); }
 
 if [[ -z "$root" ]]; then
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  candidate="$(cd "$script_dir/../../../.." && pwd)"
-  if [[ -d "$candidate/ros2_ws" ]]; then
-    root="$candidate"
-  else
+  candidate="$script_dir"
+  for _ in 1 2 3 4 5 6 7 8; do
+    if [[ -d "$candidate/ros2_ws" ]] && \
+       { [[ -d "$candidate/librealsense" ]] || \
+         [[ -d "$candidate/upstream/librealsense2-v2.51.1" ]]; }; then
+      root="$candidate"
+      break
+    fi
+    candidate="$(dirname "$candidate")"
+  done
+  if [[ -z "$root" ]]; then
     fail 'set R200_ROOT or pass the workspace root as argument 1'
   fi
 fi
 
 if [[ -n "$root" ]]; then
-  [[ -d "$root/upstream/librealsense2-v2.51.1" ]] \
+  [[ -d "$root/librealsense" || -d "$root/upstream/librealsense2-v2.51.1" ]] \
     && pass 'R200 librealsense source found' \
-    || fail 'missing upstream/librealsense2-v2.51.1'
-  [[ -d "$root/upstream/realsense-ros" ]] \
+    || fail 'missing librealsense source checkout'
+  [[ -d "$root/ros2_ws/src/realsense-ros" || -d "$root/upstream/realsense-ros" ]] \
     && pass 'realsense-ros source found' \
-    || fail 'missing upstream/realsense-ros'
+    || fail 'missing realsense-ros source checkout'
   [[ -f "$root/rs2_install/lib/cmake/realsense2/realsense2Config.cmake" ]] \
     && pass 'R200 librealsense install found' \
     || fail 'missing rs2_install librealsense CMake package'
