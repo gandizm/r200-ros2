@@ -14,9 +14,8 @@ realsense-ros 4.51.1；2.58.3 仅用于第二阶段差异评估，尚未移植�
 | `tools` | `r200-rs2-port` | RS1/RS2 探针、点云、速率、重启验收 |
 | `demo` | `master` | ROS2 launch、RViz、切换脚本、验收和文档 |
 
-不要把这些工作树直接合并成一团提交。GitHub 可用多个 Private 独立镜像，
-每个镜像保留官方 `upstream`；若最终选择 monorepo，也必须保留上游版本、补丁
-边界和独立构建说明。
+不要把这些工作树直接合并成一团提交。librealsense 和 realsense-ros 使用官方
+公开 fork，配套 demo/tools 使用公开仓库；每个 fork 保留官方 `upstream`。
 
 当前本地验收点：
 
@@ -38,7 +37,7 @@ R200 被建模为一个 RS2 device、三个 synthetic sensor：
 ```text
 R200/LR200 USB device
 ├── Stereo Module      -> raw Z16 -> crop or 6px zero-border -> Depth
-├── Stereo IR Sensor   -> raw Y8I -> left/right split        -> Infra1/Infra2
+├── Stereo IR Sensor   -> raw Y8I/Y12I -> left/right Y8/Y16  -> Infra1/Infra2
 └── RGB Camera         -> raw YUYV -> standard converters    -> Color
 ```
 
@@ -86,6 +85,10 @@ pointcloud filter。唯一 R200 launch 特例是显式传
 `stereo_ir_sensor.profile`，因为它是第三个独立 sensor，而官方 4.51.1
 `rs_launch.py` 未声明这个动态模块参数。
 
+Stereo exposure/gain/auto-exposure/emitter 及 RGB UVC controls 都由 core 注册为
+标准 RS2 option，因此自动进入官方 ROS 动态参数路径。Depth units 保持只读
+0.001m；可写候选会导致 4.51.1 按 sensor 顺序启动时 IR `VIDIOC_S_FMT EIO`。
+
 ## 已验证与未验证
 
 详细数字见 [ACCEPTANCE.md](ACCEPTANCE.md)。摘要：
@@ -96,22 +99,23 @@ pointcloud filter。唯一 R200 launch 特例是显式传
 - 默认四路 480p60 + RGB 点云：约 59.4-59.5Hz，通过
 - 1080p30 质量 profile：协商通过；外部 RGB 约 23-27Hz，性能部分通过
 - 六组 depth/IR 尺寸 × 30/60/90fps：18/18 通过
-- 一小时长稳、热插拔：待验
+- 六组 Y12I→左右 Y16 @30：6/6 通过（ROS 4.51.1 仍固定选择 Y8）
+- typed options 的 ROS query/set/restore 和恢复后四路：通过
+- 一小时长稳、热插拔：用户决定本阶段延期
 - D435 真机 common-path 回归：待验（当前未连接 D435）
 
 ## GitHub 发布方案
 
-目标是 Private 管理，但代码保持通用。GitHub 的 fork network 不支持把普通
-fork 设为 Private，因此使用独立 Private 镜像：
+目标是全部公开并保持通用。两个上游项目创建公开 fork：
 
 ```bash
 git remote rename origin upstream
-git remote add origin git@github.com:ACCOUNT/REPOSITORY.git
+git remote add origin git@github.com:ACCOUNT/FORK.git
 git push -u origin r200-rs2-port
 ```
 
-实际仓库名、账号和是否拆成多个仓库必须在用户登录后确认。不得在文档、remote
-URL 输出或日志中保存 token。推送前执行验收矩阵 P5-P7，并记录 commit/tag。
+实际仓库名和账号必须在用户登录后确认。不得在文档、remote URL 输出或日志中
+保存 token。推送前执行验收矩阵 P5-P8，并记录 commit/tag。
 
 ## 第二阶段迁移
 

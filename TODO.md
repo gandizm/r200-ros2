@@ -3,9 +3,9 @@
 每项必须包含完成定义和证据，不以“AI 已实现”作为完成依据。优先级内按推荐
 顺序执行。
 
-## P0：2.51.1 首次可管理版本
+## P0：2.51.1 首次公开版本
 
-- [ ] 完成 60 分钟默认预设长稳。
+- [ ] （延期，不阻塞当前发布）完成 60 分钟默认预设长稳。
   - 完成定义：四路 640x480@60 + RGB 点云连续运行；无 EIO/断流；平均
     ≥48Hz；保存 CPU、RSS、丢帧与末尾日志。
 - [x] 跑完六组 depth/IR profile 的 30/60/90 抽样矩阵。
@@ -17,8 +17,8 @@
   - core：RS1 模式/裁剪/帧计数；stream-intent 生命周期；文档各自提交。
   - ROS2：只保留 PID/视频 sensor 兼容的必要提交。
   - demo/tools：launch、验收器和文档独立提交。
-- [ ] 用户登录后创建 GitHub Private 独立镜像。
-  - 不能用 GitHub 公开 Fork 代替；添加官方仓库为 `upstream`。
+- [ ] 用户登录后创建 GitHub 公开 fork 和公开配套仓库。
+  - librealsense、realsense-ros 使用官方公开 fork；添加官方仓库为 `upstream`。
   - 推送前检查无 token、SSH key、设备序列号逻辑、绝对个人路径、build/install
     产物和超大日志。
 - [ ] 为首次版本打 pre-release 标签并附验收表。
@@ -26,25 +26,31 @@
 
 ## P1：核心驱动完整性
 
-- [ ] 实现 R200 typed options：曝光、增益、自动曝光、发射器/激光功率、
-  disparity/depth 控制。
-  - 逐项对照 RS1 XU 范围、步进、默认值和只读状态；不得照搬 D400 option。
-  - 每项必须有 query/set/恢复默认和越界测试。
-- [ ] 正确支持或明确永久禁用 Y16/Y12 IR。
-  - 当前有原始 UVC 格式映射，但已从用户 profile 隐藏。
-  - 完成定义：拆包、metadata 行、双目索引、内参、像素范围和 ROS encoding
-    全部有真机测试；否则继续隐藏。
+- [x] 实现 D435 共通的 R200 typed options。
+  - Stereo 曝光、增益、自动曝光、发射器已按 RS1 XU 范围和当前 FPS discovery
+    实现；彩色 UVC 控件由设备逐项探测后注册。
+  - ROS 已完成 query/set/恢复和越界保护；R200 不伪造可调激光功率。
+  - `DEPTH_UNITS=0.001m` 保持只读：可写版本会确定性破坏 ROS 顺序启动 IR。
+- [ ] 设计 R200 专属 disparity/depth-control 公共 API。
+  - RS2 没有这些 RS1 字段的一一对应标准 option；不得借用含义不同的 D400
+    option。若扩展公开 enum，需同时给出 ABI、ROS 参数名和最新版迁移方案。
+- [x] 在 RS2 SDK 正确支持 Y12I→双路 Y16 IR。
+  - 六种尺寸 @30 已验证拆包、metadata 行排除、双目索引、stride、非空像素和
+    每次 stop/close；默认 Y8 路径不变。
+- [ ] 通过官方格式参数把 Y16 接入 ROS 图像话题。
+  - realsense-ros 4.51.1 固定选择 IR Y8；新版官方 wrapper 已有逐流 format
+    参数。迁移时使用官方 `infra1_format/infra2_format`，不发明私有参数。
 - [ ] 处理混合 FPS 时的 color frame counter scale。
   - RS1 会按 master depth/IR FPS ÷ color FPS 归一化 YUYV 嵌入计数。
   - 当前两个正式预设同频，不受影响；混合 60/30、90/30 前必须补齐。
-- [ ] 评估可证明的时间戳方案。
+- [ ] （硬件证据出现前不改）评估可证明的时间戳方案。
   - 当前使用 backend system timestamp 并诚实返回 `SYSTEM_TIME`。
   - RS1 只是按 FPS 合成时间线，不能据此标成 `HARDWARE_CLOCK`。
   - 只有拿到真实设备时钟证据并验证 wrap/drop 后才能更改 domain。
 - [ ] 把 stream-intent 从保守 0x7 改为准确 active mask（若固件允许）。
   - 当前完整 close→reopen 已通过；部分 sensor 在线重配仍不保证。
   - 必须验证 depth-only、color-only、IR-only、任意组合和失败回滚。
-- [ ] 热插拔和异常恢复。
+- [ ] （延期，不阻塞当前发布）热插拔和异常恢复。
   - 覆盖节点重连、XU `ENOENT`、USB reset 后校准重新读取；不刷写固件。
 - [ ] 定位 ROS 的 `Frame metadata isn't available` 单次警告。
   - frame counter metadata 已可用；警告来源是 system-time domain。
@@ -52,7 +58,7 @@
 
 ## P1：D435 通用功能对齐
 
-- [ ] 连接无 IMU D435 跑相同 ROS2 acceptance。
+- [ ] （有设备时验收）连接无 IMU D435 跑相同 ROS2 acceptance。
   - 检查官方默认 profile、图像、CameraInfo、TF、pointcloud 和动态参数。
   - 确认通用 `sensor.cpp` 改动没有破坏 D400/SR300。
 - [ ] 增加 capability 示例/文档。
