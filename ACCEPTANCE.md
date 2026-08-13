@@ -31,7 +31,7 @@
 
 ### A1：RS1 模式基线
 
-`tools/rs1_probe` 确认 depth/IR 用户可见尺寸为：
+`validation/build-rs1/rs1_probe` 确认 depth/IR 用户可见尺寸为：
 
 - 640x480、628x468、492x372、480x360、332x252、320x240
 - 每种尺寸均支持 30/60/90 fps
@@ -42,8 +42,8 @@
 ### A2：RS2 profile 与标定
 
 ```bash
-tools/rs2_probe
-tools/rs2_stream all
+validation/build/rs2_probe
+validation/build/rs2_stream all
 ```
 
 通过条件与结果：
@@ -59,7 +59,7 @@ tools/rs2_stream all
 ### A3：同一设备对象的完整重启
 
 ```bash
-tools/rs2_restart
+validation/build/rs2_restart
 ```
 
 通过条件：同一个 device/sensor 对象连续执行两次
@@ -104,7 +104,7 @@ depth/IR 约 29.97Hz，点云约 29.76Hz，1080p RGB 约 23.11Hz；单独
 ### A6：完整 depth/双红外模式矩阵
 
 ```bash
-tools/rs2_profile_matrix
+validation/build/rs2_profile_matrix
 ```
 
 六组有效尺寸分别在 30/60/90fps 下执行 open/start/收帧/stop/close，共 18
@@ -115,7 +115,7 @@ frame number 一致性；每组至少收到 2 个 depth 和 4 个 IR 输出帧�
 
 ### A7：标准 typed options 与 ROS 参数
 
-`tools/rs2_options` 在 LR200 真机确认：
+`validation/build/rs2_options` 在 LR200 真机确认：
 
 - Stereo exposure：30fps 范围 100-33000us；60fps 动态上限 16400us；
 - Stereo gain：100-6399；自动曝光和发射器均为 bool；
@@ -142,7 +142,7 @@ true→false→true、RGB brightness 0→1→0；全部读回恢复。随后四�
 ### A8：Y12I 拆包为双路 Y16
 
 ```bash
-tools/rs2_y16
+validation/build/rs2_y16
 ```
 
 六种尺寸 640x480、628x468、492x372、480x360、332x252、320x240 均在
@@ -161,7 +161,7 @@ tools/rs2_y16
 | P3 | 热插拔恢复 | 用户已决定本阶段延期；后续检查拔插恢复且无需刷固件 | DEFERRED |
 | P4 | D435 回归 | 同一 RS2/ROS2 构建连接无 IMU D435；默认官方 profile、TF、点云不回归 | PENDING：当前无 D435 |
 | P5 | 代码静态门禁 | `git diff --check`、core 和 ROS2 构建、Python/shell 语法通过 | PASS |
-| P6 | Git 历史 | core、ROS2、demo/tools 按职责拆分提交；工作树干净；tag/commit 写入交接文档 | PARTIAL：提交/工作树通过，发布 tag 待建 |
+| P6 | Git 历史 | core、ROS2、配套仓库按职责拆分提交；工作树干净；tag/commit 写入交接文档 | PARTIAL：提交/工作树通过，发布 tag 待建 |
 | P7 | GitHub Public | 用户登录后创建公开 fork/配套仓库、推送、拉取验证、检查无凭据/大文件/构建物 | PENDING |
 | P8 | Y16 ROS 接入 | 新版官方 format 参数选择左右 Y16；ROS encoding 为 `mono16`；双话题真机验收 | PENDING：核心 SDK 已 PASS |
 

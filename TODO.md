@@ -11,12 +11,12 @@
 - [x] 跑完六组 depth/IR profile 的 30/60/90 抽样矩阵。
   - 完成定义：尺寸、stride、buffer、frame counter 和 start/stop 均通过；
     传输 metadata 行不出现在图像中。
-  - 证据：`tools/rs2_profile_matrix`，18/18 PASS；已检查尺寸、stride、buffer、
+  - 证据：`validation/build/rs2_profile_matrix`，18/18 PASS；已检查尺寸、stride、buffer、
     counter 和完整启停。像素质量/数据范围仍由后续场景化测试覆盖。
 - [x] 整理最小提交。
   - core：RS1 模式/裁剪/帧计数；stream-intent 生命周期；文档各自提交。
   - ROS2：只保留 PID/视频 sensor 兼容的必要提交。
-  - demo/tools：launch、验收器和文档独立提交。
+  - 配套仓库：launch、Skill、验收器、`validation/` 和文档按职责提交。
 - [ ] 用户登录后创建 GitHub 公开 fork 和公开配套仓库。
   - librealsense、realsense-ros 使用官方公开 fork；添加官方仓库为 `upstream`。
   - 推送前检查无 token、SSH key、设备序列号逻辑、绝对个人路径、build/install

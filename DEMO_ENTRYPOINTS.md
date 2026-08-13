@@ -77,7 +77,8 @@ AWB；ROS 4.51.1 的关联 bool 参数值不会因这个硬件副作用自动刷
 
 ## 底层诊断和验收入口
 
-这些程序位于 `tools/`，用于驱动验收，不是日常 ROS 节点：
+这些程序源码位于 `validation/`，用于驱动验收，不是日常 ROS 节点。按
+`validation/README.md` 构建后从 `validation/build/` 运行：
 
 | 程序 | 作用 |
 | --- | --- |

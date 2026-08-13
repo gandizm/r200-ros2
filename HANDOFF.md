@@ -11,11 +11,12 @@ realsense-ros 4.51.1；2.58.3 仅用于第二阶段差异评估，尚未移植�
 | `upstream/librealsense2-v2.51.1` | `r200-rs2-port` | 当前 R200 核心稳定分支 |
 | `upstream/realsense-ros` | `r200-ros2` | ROS2 4.51.1 最小设备兼容修改 |
 | `upstream/librealsense2` | 上游 2.58.3 快照 | 第二阶段迁移目标，不承载当前稳定修改 |
-| `tools` | `r200-rs2-port` | RS1/RS2 探针、点云、速率、重启验收 |
-| `demo` | `master` | ROS2 launch、RViz、切换脚本、验收和文档 |
+| `demo/validation` | `master` | RS1/RS2 探针、点云、速率和重启验收 |
+| `demo` | `master` | ROS2 launch、RViz、Skill、切换脚本、验收和文档 |
 
 不要把这些工作树直接合并成一团提交。librealsense 和 realsense-ros 使用官方
-公开 fork，配套 demo/tools 使用公开仓库；每个 fork 保留官方 `upstream`。
+公开 fork，demo、validation 和 Skill 使用同一个公开配套仓库；每个 fork 保留
+官方 `upstream`。
 
 当前本地验收点：
 
@@ -69,7 +70,8 @@ backend payload 指针，随后仍由原 backend continuation 管理生命周期
 ### stream-intent
 
 三个 sensor 第一次 open 前写保守全 mask 0x7。每个成功 open 增加计数；全部
-close 后清除 written 标志，下一完整周期重新写入。`tools/rs2_restart` 已在同一
+close 后清除 written 标志，下一完整周期重新写入。`validation/build/rs2_restart`
+已在同一
 设备对象内验证两轮。部分 sensor 在线重配和准确 active mask 仍在 TODO。
 
 ## ROS2 最小差异

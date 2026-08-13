@@ -60,6 +60,7 @@ librealsense 和 realsense-ros 的主许可证均为 Apache License 2.0。它允
 
 - `librealsense`：从官方 `v2.51.1` 公开 fork，开发分支 `r200-rs2-port`；
 - `realsense-ros`：从官方 `4.51.1` 公开 fork，开发分支 `r200-ros2`；
-- demo、工具和中文文档：公开配套仓库，固定上述两个 commit/tag。
+- demo、`validation/` 工具、Skill 和中文文档：同一个公开配套仓库，固定上述
+  两个 fork 的 commit/tag。
 
 所有 release 都要同时写明官方基线、社区补丁 commit、已验收硬件和未验收项。
