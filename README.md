@@ -1,8 +1,8 @@
 # R200 ROS2 demo
 
 最接近英特尔官方 RS2+ROS2 用法的最小演示：官方 `realsense2_camera`
-驱动 + RViz2，同时显示 Depth / RGB / Infra1 / Infra2 / 彩色点云，
-支持运行中切换分辨率与帧率。
+驱动 + RViz2（点云）+ 4 个独立的 `rqt_image_view` 图像窗口
+（Depth / RGB / Infra1 / Infra2），支持切换分辨率与帧率。
 
 ## 环境准备
 
@@ -21,8 +21,9 @@ export LD_LIBRARY_PATH=/home/zmiaow/r200_ros2/rs2_install/lib:$LD_LIBRARY_PATH
 ros2 launch r200_demo r200_demo.launch.py depth_profile:=640x480x60
 ```
 
-RViz2 会打开：Depth（伪彩色/原始）、RGB、Infra1、Infra2 四个图像窗口，
-以及 `/camera/depth/color/points` 的 RGB 点云（固定坐标系 `camera_link`）。
+RViz2 显示 `/camera/depth/color/points` 的 RGB 点云（固定坐标系
+`camera_link`）；Depth / RGB / Infra1 / Infra2 各自独立成窗，可自由
+拖拽、缩放。
 
 ## 运行中切换分辨率
 
@@ -35,15 +36,26 @@ ros2 run r200_demo r200_switch.sh 640x480x90 1280x720x30
 
 # 默认 640x480x60
 ros2 run r200_demo r200_switch.sh
+
+# 原生深度 628x469（无任何 padding/重采样）+ 颜色 640x480
+ros2 run r200_demo r200_switch.sh 628x469x60 640x480x60
 ```
 
 可用组合：
 
 | Stream | 可用分辨率/帧率（节选） |
 | --- | --- |
-| Depth | 640x480@30/60/90, 492x372@30/60/90, 332x252@30/60/90 |
+| Depth | 原生 628x469@30/60/90、628x361、628x242；rectified 640x480@30/60/90、492x372、332x252 |
 | Infra1/2 | 同 Depth（Y8） |
 | Color | 1920x1080@30, 1280x720@30, 640x480@60, 320x240@60 等 |
+
+关于“重采样”：
+
+- 640x480 是 **6px 零填充**（原生像素 1:1 平移到 offset(6,6)，边框置 0），
+  不是插值重采样，像素值原样保留。
+- 原生 628x469 的内参 `fx=573.909, ppx=314.807, ppy=233.195` 与 640x480 的
+  `fx=573.909, ppx=320.807, ppy=239.195` 来自同一份标定，两者 3D 点云几何
+  **完全一致**；depth→color 外参不变。
 
 说明：R200 固件不允许在其他流运行时重配置 IR 接口，因此切换采用
 “停掉当前 launch → 用新参数重启”的方式，RViz 会一并重开。

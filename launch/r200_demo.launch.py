@@ -46,9 +46,26 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Independent, resizable image windows (one rqt_image_view per stream).
+    image_viewers = []
+    for stream, topic in (
+        ('depth', '/camera/depth/image_rect_raw'),
+        ('color', '/camera/color/image_raw'),
+        ('infra1', '/camera/infra1/image_raw'),
+        ('infra2', '/camera/infra2/image_raw'),
+    ):
+        image_viewers.append(Node(
+            package='rqt_image_view',
+            executable='rqt_image_view',
+            name='image_view_' + stream,
+            arguments=[topic],
+            output='screen',
+        ))
+
     return LaunchDescription([
         DeclareLaunchArgument('depth_profile', default_value='640x480x60'),
         DeclareLaunchArgument('color_profile', default_value='640x480x60'),
         rs_launch,
         rviz,
+        *image_viewers,
     ])
