@@ -9,7 +9,7 @@
 
 | ID | 要求 | 验收标准 | 当前状态 |
 | --- | --- | --- | --- |
-| R1 | GitHub 全部公开 | 用户登录；创建两个官方 fork 和公开配套仓库；`upstream` 指向官方 | PENDING：等待用户登录 |
+| R1 | GitHub 全部公开 | 创建两个官方 fork 和公开配套仓库；`upstream` 指向官方；默认分支可拉取 | PASS：三个仓库均公开，fork 关系和默认分支已通过 GitHub API 验证 |
 | R2 | 公开且代码通用 | 无用户名、绝对工程路径、序列号或机器判断；保留 Apache-2.0/NOTICE；文档可独立构建 | PASS（当前改动） |
 | R3 | 先完善 2.51.1 | 核心/ROS2 构建、真机模式、四路流、点云、重启、控件和文档门禁完成 | PARTIAL：Y16 ROS 接入和 D435 待验；稳定性项已延期 |
 | R4 | 再迁移最新版 | 2.51.1 发布点冻结后，单独分支移植 2.58.3；不得覆盖稳定分支 | PENDING |
@@ -161,8 +161,8 @@ validation/build/rs2_y16
 | P3 | 热插拔恢复 | 用户已决定本阶段延期；后续检查拔插恢复且无需刷固件 | DEFERRED |
 | P4 | D435 回归 | 同一 RS2/ROS2 构建连接无 IMU D435；默认官方 profile、TF、点云不回归 | PENDING：当前无 D435 |
 | P5 | 代码静态门禁 | `git diff --check`、core 和 ROS2 构建、Python/shell 语法通过 | PASS |
-| P6 | Git 历史 | core、ROS2、配套仓库按职责拆分提交；工作树干净；tag/commit 写入交接文档 | PARTIAL：提交/工作树通过，发布 tag 待建 |
-| P7 | GitHub Public | 用户登录后创建公开 fork/配套仓库、推送、拉取验证、检查无凭据/大文件/构建物 | PENDING |
+| P6 | Git 历史 | core、ROS2、配套仓库按职责拆分提交；工作树干净；tag/commit 写入交接文档 | PASS：`v0.1.0-alpha.1` 预发布点 |
+| P7 | GitHub Public | 创建公开 fork/配套仓库、推送、远端 API 验证、检查无凭据/个人路径/构建物 | PASS |
 | P8 | Y16 ROS 接入 | 新版官方 format 参数选择左右 Y16；ROS encoding 为 `mono16`；双话题真机验收 | PENDING：核心 SDK 已 PASS |
 
 延期项不从 TODO 删除。首次仓库版本必须明确列出未验收项目；是否标

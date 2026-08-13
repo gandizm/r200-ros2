@@ -17,12 +17,13 @@
   - core：RS1 模式/裁剪/帧计数；stream-intent 生命周期；文档各自提交。
   - ROS2：只保留 PID/视频 sensor 兼容的必要提交。
   - 配套仓库：launch、Skill、验收器、`validation/` 和文档按职责提交。
-- [ ] 用户登录后创建 GitHub 公开 fork 和公开配套仓库。
+- [x] 用户登录后创建 GitHub 公开 fork 和公开配套仓库。
   - librealsense、realsense-ros 使用官方公开 fork；添加官方仓库为 `upstream`。
   - 推送前检查无 token、SSH key、设备序列号逻辑、绝对个人路径、build/install
     产物和超大日志。
-- [ ] 为首次版本打 pre-release 标签并附验收表。
-  - 若 D435/热插拔/长稳仍未跑完，release notes 必须明确 experimental。
+- [x] 为首次版本打 pre-release 标签并附验收表。
+  - `v0.1.0-alpha.1` 明确标为 pre-release/experimental，并列出 D435、
+    热插拔、长稳、ROS Y16 和 1080p 满帧率待验项。
 
 ## P1：核心驱动完整性
 

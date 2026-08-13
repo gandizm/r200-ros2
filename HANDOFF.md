@@ -28,8 +28,17 @@ realsense-ros 4.51.1；2.58.3 仅用于第二阶段差异评估，尚未移植�
 | tools | `526a32b` | counter、重启、profile、controls 与双 Y16 验收 |
 | demo | `4434cf4` | 同频预设、公开发布、功能入口、验收和 TODO 文档 |
 
-以上 commit 均为本地提交；GitHub remote、release tag 和发布 commit 仍需在用户
-登录并确认仓库名后记录。
+公开发布位置：
+
+- `https://github.com/gandizm/librealsense`，默认分支 `r200-rs2-port`，当前
+  R200 commit `aff037f`；
+- `https://github.com/gandizm/realsense-ros`，默认分支 `r200-ros2`，当前
+  R200 commit `b02bc1e`；
+- `https://github.com/gandizm/r200-ros2`，默认分支 `master`，配套 release
+  `v0.1.0-alpha.1`。
+
+GitHub API 已验证三个仓库均为 public；前两个保留到官方 `realsenseai` 父仓库
+的 fork 关系。本地 `origin` 指向 `gandizm`，`upstream` 指向官方父仓库。
 
 ## 架构
 
@@ -108,16 +117,16 @@ Stereo exposure/gain/auto-exposure/emitter 及 RGB UVC controls 都由 core 注�
 
 ## GitHub 发布方案
 
-目标是全部公开并保持通用。两个上游项目创建公开 fork：
+目标是全部公开并保持通用。当前标准 remote 结构为：
 
 ```bash
-git remote rename origin upstream
-git remote add origin git@github.com:ACCOUNT/FORK.git
+git remote add upstream https://github.com/realsenseai/UPSTREAM.git
+git remote add origin https://github.com/gandizm/FORK.git
 git push -u origin r200-rs2-port
 ```
 
-实际仓库名和账号必须在用户登录后确认。不得在文档、remote URL 输出或日志中
-保存 token。推送前执行验收矩阵 P5-P8，并记录 commit/tag。
+不得在文档、remote URL 输出或日志中保存 token。推送前执行验收矩阵 P5-P8，
+并记录 commit/tag。
 
 ## 第二阶段迁移
 

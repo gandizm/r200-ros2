@@ -4,7 +4,9 @@
 
 ### librealsense 核心
 
-基线是 IntelRealSense/librealsense 的 `v2.51.1`。当前 `r200-rs2-port`
+基线是官方 librealsense 的 `v2.51.1`。GitHub 官方组织当前为
+`realsenseai`（该基线发布时使用 `IntelRealSense` 组织名）。当前
+`r200-rs2-port`
 相对该 tag 的精确差异为：
 
 - 当前 `aff037f` 相对 `v2.51.1` 为 12 个文件、2463 行新增、7 行删除；
@@ -18,7 +20,8 @@
 
 ### realsense-ros wrapper
 
-基线是 IntelRealSense/realsense-ros 的 tag `4.51.1`。当前 `r200-ros2`
+基线是官方 realsense-ros 的 tag `4.51.1`，GitHub 当前父仓库为
+`realsenseai/realsense-ros`。当前 `r200-ros2`
 相对该 tag 的精确差异为：
 
 - 当前 `b02bc1e` 相对 `4.51.1` 为 3 个文件、25 行新增、3 行删除；

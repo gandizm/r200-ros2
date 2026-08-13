@@ -120,6 +120,7 @@ capability，而不是仅按产品名分支。
 - [UPSTREAM_AND_LICENSE.md](UPSTREAM_AND_LICENSE.md)：官方基线、精确改动量和开源义务
 - [HANDOFF.md](HANDOFF.md)：架构、仓库和维护交接
 - [TODO.md](TODO.md)：按优先级排列的未完成项和完成定义
+- [RELEASE_NOTES.md](RELEASE_NOTES.md)：首个实验性预发布的固定组件和限制
 - librealsense 核心说明：`doc/r200-support.md`
 
 ## Codex 使用 Skill
