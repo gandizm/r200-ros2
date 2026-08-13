@@ -1,44 +1,53 @@
 #!/usr/bin/env python3
-# Launch the Intel R200 through the official realsense2_camera driver plus RViz2.
+# Launch the Intel R200 through the official realsense2_camera node plus RViz2.
 #
 # Usage:
-#   ros2 launch r200_demo r200_demo.launch.py depth_profile:=640x480x60
+#   ros2 launch r200_demo r200_demo.launch.py gui:=false
 import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    depth_profile = LaunchConfiguration(
-        'depth_profile', default='640x480x60')
-    color_profile = LaunchConfiguration(
-        'color_profile', default='640x480x60')
+    depth_profile = LaunchConfiguration('depth_profile')
+    ir_profile = LaunchConfiguration('ir_profile')
+    color_profile = LaunchConfiguration('color_profile')
 
-    rs_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory('realsense2_camera'),
-                'launch', 'rs_launch.py')),
-        launch_arguments={
-            'pointcloud.enable': 'true',
-            'colorizer.enable': 'true',
-            'align_depth.enable': 'false',
-            'enable_infra1': 'true',
-            'enable_infra2': 'true',
+    # Use the official package/executable and official ROS parameter names.
+    # Stereo IR Sensor is a separate R200 UVC sensor, so its generated profile
+    # parameter must be set explicitly; rs_launch.py does not declare it.
+    camera = Node(
+        package='realsense2_camera',
+        executable='realsense2_camera_node',
+        namespace='camera',
+        name='camera',
+        parameters=[{
+            'enable_depth': True,
+            'enable_color': True,
+            'enable_infra1': True,
+            'enable_infra2': True,
             'depth_module.profile': depth_profile,
+            'stereo_ir_sensor.profile': ir_profile,
             'rgb_camera.profile': color_profile,
-        }.items(),
+            'enable_sync': True,
+            'pointcloud.enable': LaunchConfiguration('pointcloud'),
+            'align_depth.enable': False,
+            'colorizer.enable': False,
+        }],
+        output='screen',
+        arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+        emulate_tty=True,
     )
 
-    rviz_config = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-        'config', 'r200.rviz')
+    rviz_config = os.path.join(get_package_share_directory('r200_demo'),
+                               'config', 'r200.rviz')
     rviz = Node(
+        condition=IfCondition(LaunchConfiguration('gui')),
         package='rviz2',
         executable='rviz2',
         name='rviz2',
@@ -55,6 +64,7 @@ def generate_launch_description():
         ('infra2', '/camera/infra2/image_raw'),
     ):
         image_viewers.append(Node(
+            condition=IfCondition(LaunchConfiguration('gui')),
             package='rqt_image_view',
             executable='rqt_image_view',
             name='image_view_' + stream,
@@ -64,8 +74,12 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument('depth_profile', default_value='640x480x60'),
+        DeclareLaunchArgument('ir_profile', default_value='640x480x60'),
         DeclareLaunchArgument('color_profile', default_value='640x480x60'),
-        rs_launch,
+        DeclareLaunchArgument('pointcloud', default_value='true'),
+        DeclareLaunchArgument('gui', default_value='true'),
+        DeclareLaunchArgument('log_level', default_value='info'),
+        camera,
         rviz,
         *image_viewers,
     ])
