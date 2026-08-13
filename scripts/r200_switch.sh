@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
 # Relaunch the R200 demo with a different resolution/framerate.
 #
 # The R200 firmware does not tolerate reconfiguring the IR interface while

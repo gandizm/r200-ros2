@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Measure the four default R200 ROS image topics and fail on regressions."""
 
 import argparse

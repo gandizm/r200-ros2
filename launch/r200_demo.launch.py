@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 # Launch the Intel R200 through the official realsense2_camera node plus RViz2.
 #
 # Usage:

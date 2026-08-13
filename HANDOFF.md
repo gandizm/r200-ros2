@@ -22,8 +22,8 @@ realsense-ros 4.51.1；2.58.3 仅用于第二阶段差异评估，尚未移植�
 | 仓库 | Commit | 内容 |
 | --- | --- | --- |
 | RS1 | `29e2fe0` | Ubuntu 22.04 基线兼容 |
-| RS2 core | `4a81adc` | 模式/帧序/重启、typed controls、双 Y16 与支持文档 |
-| realsense-ros | `371cbb5` | R200 video sensor 兼容（前一提交含 PID） |
+| RS2 core | `aff037f` | 模式/帧序/重启、typed controls、双 Y16、支持及变更标记 |
+| realsense-ros | `b02bc1e` | PID/video sensor 最小兼容及 Apache-2.0 变更标记 |
 | tools | `526a32b` | counter、重启、profile、controls 与双 Y16 验收 |
 | demo | `4434cf4` | 同频预设、公开发布、功能入口、验收和 TODO 文档 |
 

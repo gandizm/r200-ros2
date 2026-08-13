@@ -7,7 +7,7 @@
 基线是 IntelRealSense/librealsense 的 `v2.51.1`。当前 `r200-rs2-port`
 相对该 tag 的精确差异为：
 
-- 当前 `4a81adc` 相对 `v2.51.1` 为 12 个文件、2451 行新增、6 行删除；
+- 当前 `aff037f` 相对 `v2.51.1` 为 12 个文件、2463 行新增、7 行删除；
 - 新增 `src/r200/` 设备、传感器、标定、profile、帧处理和 XU 协议实现；
 - 只对 context、产品线、通用 sensor 生命周期和构建入口做少量接线；
 - R200 协议和模式以 librealsense 1.12.1（RS1）的 DS4 实现为证据源，转换到
@@ -21,7 +21,7 @@
 基线是 IntelRealSense/realsense-ros 的 tag `4.51.1`。当前 `r200-ros2`
 相对该 tag 的精确差异为：
 
-- 3 个文件；22 行新增，3 行删除；
+- 当前 `b02bc1e` 相对 `4.51.1` 为 3 个文件、25 行新增、3 行删除；
 - `constants.h` 增加 R200/LR200 PID；
 - factory 将两个 PID 交给官方 `BaseRealSenseNode`；
 - sensor setup 不再假定视频 profile 必然属于深度/彩色 sensor，以接受 R200
