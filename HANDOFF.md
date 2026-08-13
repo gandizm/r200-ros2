@@ -18,6 +18,19 @@ realsense-ros 4.51.1；2.58.3 仅用于第二阶段差异评估，尚未移植�
 每个镜像保留官方 `upstream`；若最终选择 monorepo，也必须保留上游版本、补丁
 边界和独立构建说明。
 
+当前本地验收点：
+
+| 仓库 | Commit | 内容 |
+| --- | --- | --- |
+| RS1 | `29e2fe0` | Ubuntu 22.04 基线兼容 |
+| RS2 core | `ea328f9` / `55202f3` | RS1 模式/帧序/重启修正；支持文档 |
+| realsense-ros | `371cbb5` | R200 video sensor 兼容（前一提交含 PID） |
+| tools | `af714f2` | counter 与同设备双周期验收 |
+| demo | `6b258e8` / `a6f04bc` | 同频预设/验收器；发布门禁文档 |
+
+以上 commit 均为本地提交；GitHub remote、release tag 和发布 commit 仍需在用户
+登录并确认仓库名后记录。
+
 ## 架构
 
 R200 被建模为一个 RS2 device、三个 synthetic sensor：

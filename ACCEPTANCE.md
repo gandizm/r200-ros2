@@ -110,8 +110,8 @@ depth/IR 约 29.97Hz，点云约 29.76Hz，1080p RGB 约 23.11Hz；单独
 | P2 | 全模式抽样 | 六组 depth/IR 尺寸各跑 30/60/90；检查尺寸、stride、非空数据和 frame counter | PENDING |
 | P3 | 热插拔恢复 | 节点运行→拔出→插入；在限定时间内恢复且无需刷固件 | PENDING |
 | P4 | D435 回归 | 同一 RS2/ROS2 构建连接无 IMU D435；默认官方 profile、TF、点云不回归 | PENDING：当前无 D435 |
-| P5 | 代码静态门禁 | `git diff --check`、Debug/Release 构建、现有非硬件测试通过 | PENDING：最终提交前重跑 |
-| P6 | Git 历史 | core、ROS2、demo/tools 按职责拆分提交；工作树干净；tag/commit 写入交接文档 | PENDING |
+| P5 | 代码静态门禁 | `git diff --check`、core 和 ROS2 构建、Python/shell 语法通过 | PASS |
+| P6 | Git 历史 | core、ROS2、demo/tools 按职责拆分提交；工作树干净；tag/commit 写入交接文档 | PARTIAL：提交/工作树通过，发布 tag 待建 |
 | P7 | GitHub Private | 用户登录后创建目标仓库、推送、拉取验证、检查无凭据/大文件/构建物 | PENDING |
 
 P1-P4 若用户决定延后，首次仓库版本必须标为 pre-release/experimental，且
