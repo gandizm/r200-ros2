@@ -4,7 +4,7 @@
   <name>r200_demo</name>
   <version>0.1.0</version>
   <description>Intel RealSense R200 ROS2 demo: depth/color/IR/pointcloud via official realsense2_camera</description>
-  <maintainer email="maintainers@example.invalid">R200 ROS2 Community</maintainer>
+  <maintainer email="58645849+gandizm@users.noreply.github.com">ZMiaow</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

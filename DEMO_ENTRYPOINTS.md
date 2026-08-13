@@ -96,3 +96,15 @@ AWB；ROS 4.51.1 的关联 bool 参数值不会因这个硬件副作用自动刷
 
 每个发布版本以 `ACCEPTANCE.md` 记录的命令和实际输出为准；仅出现某个入口，
 不等于该项已经通过真机验收。
+
+## Agent / Codex Skill 入口
+
+配套仓库提供 `skills/operate-r200-ros2/SKILL.md`，用于让 Codex 或兼容 Agent
+遵循同一套构建、启动、验收和诊断流程。Skill 的只读环境检查可直接执行：
+
+```bash
+skills/operate-r200-ros2/scripts/doctor.sh /path/to/r200_ros2
+```
+
+Skill 明确以官方 `realsense2_camera_node` 的通用接口作为 D435 兼容面，不创建
+R200 私有 ROS 消息或平行节点，也不会把缺失硬件能力伪装成 D435 功能。

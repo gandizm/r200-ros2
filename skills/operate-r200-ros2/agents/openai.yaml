@@ -1,0 +1,4 @@
+interface:
+  display_name: "Operate R200 ROS 2"
+  short_description: "Build, launch, verify, and diagnose the R200 driver"
+  default_prompt: "Use $operate-r200-ros2 to build and launch the R200 ROS 2 driver with the D435-equivalent interface."

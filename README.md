@@ -100,6 +100,21 @@ capability，而不是仅按产品名分支。
 - [TODO.md](TODO.md)：按优先级排列的未完成项和完成定义
 - librealsense 核心说明：`doc/r200-support.md`
 
+## Codex 使用 Skill
+
+仓库附带 [operate-r200-ros2](skills/operate-r200-ros2/SKILL.md) Skill。它让
+Codex 或兼容 Agent 按固定流程完成环境检查、核心与 ROS2 构建、两种预设启动、
+验收、控件诊断和发布维护，同时约束其不得伪造 R200 不具备的 D400 硬件能力。
+
+在仓库中可直接指定 Skill 路径使用；需要安装到个人 Codex 环境时复制完整目录：
+
+```bash
+cp -a skills/operate-r200-ros2 "${CODEX_HOME:-$HOME/.codex}/skills/"
+```
+
+典型调用：`使用 $operate-r200-ros2 检查环境并启动默认四路 480p60 点云模式。`
+Skill 的 `scripts/doctor.sh` 是只读诊断，不写固件、不重置 USB，也不修改系统配置。
+
 在 `ACCEPTANCE.md` 的发布门禁全部满足前不推送正式发布分支。D435 真机和
 一小时长稳当前缺少验收条件，会明确保留为待验，不能写成通过。
 

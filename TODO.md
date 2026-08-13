@@ -13,7 +13,7 @@
     传输 metadata 行不出现在图像中。
   - 证据：`tools/rs2_profile_matrix`，18/18 PASS；已检查尺寸、stride、buffer、
     counter 和完整启停。像素质量/数据范围仍由后续场景化测试覆盖。
-- [ ] 整理最小提交。
+- [x] 整理最小提交。
   - core：RS1 模式/裁剪/帧计数；stream-intent 生命周期；文档各自提交。
   - ROS2：只保留 PID/视频 sensor 兼容的必要提交。
   - demo/tools：launch、验收器和文档独立提交。
